@@ -1,0 +1,67 @@
+{
+  "name": "krilix-talk",
+  "private": true,
+  "version": "1.1.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --port 5173 --strictPort",
+    "vapid": "web-push generate-vapid-keys",
+    "desktop:dev": "concurrently -k \"vite --port 5173 --strictPort\" \"wait-on http://localhost:5173 && electron .\"",
+    "desktop:build": "vite build --base=./ && electron-builder --dir",
+    "desktop:dist": "vite build --base=./ && electron-builder --win nsis"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "lucide-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "@supabase/supabase-js": "latest"
+  },
+  "devDependencies": {
+    "vite-plugin-pwa": "latest",
+    "web-push": "latest",
+    "electron": "latest",
+    "electron-builder": "latest",
+    "concurrently": "latest",
+    "wait-on": "latest",
+    "electron-updater": "latest"
+  },
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "hu.krilix.talk",
+    "productName": "Krilix Talk",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "Krilix-Talk-Setup-${version}.${ext}",
+      "icon": "public/pwa-256x256.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://example.com/krilix-updates"
+      }
+    ]
+  },
+  "description": "Krilix Talk desktop chat app",
+  "author": "Krilix"
+}

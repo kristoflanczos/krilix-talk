@@ -1,0 +1,9 @@
+Krilix Talk környezeti változók
+
+Hozz létre egy .env fájlt a projekt gyökerében:
+
+VITE_SUPABASE_URL=https://nrryghqumxqonqvpyzqx.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=SAJÁT_PUBLISHABLE_KEY
+VITE_VAPID_PUBLIC_KEY=SAJÁT_VAPID_PUBLIC_KEY
+
+A VAPID_PRIVATE_KEY soha ne kerüljön a frontendbe.
