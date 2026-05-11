@@ -58,13 +58,13 @@
       "createStartMenuShortcut": true
     },
     "publish": [
-      {
-        "provider": "github",
-        "owner": "kristoflanczos",
-        "repo": "krilix-talk-releases",
-        "releaseType": "release"
-      }
-    ]
+  {
+    "provider": "github",
+    "owner": "kristoflanczos",
+    "repo": "krilix-talk",
+    "releaseType": "release"
+  }
+]
   },
   "description": "Krilix Talk desktop chat app",
   "author": "Krilix"
