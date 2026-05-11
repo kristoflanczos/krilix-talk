@@ -7,3 +7,12 @@ VITE_SUPABASE_PUBLISHABLE_KEY=SAJÁT_PUBLISHABLE_KEY
 VITE_VAPID_PUBLIC_KEY=SAJÁT_VAPID_PUBLIC_KEY
 
 A VAPID_PRIVATE_KEY soha ne kerüljön a frontendbe.
+
+
+GitHub Actions secrets
+
+A desktop auto-update release workflowhoz add hozzá a GitHub repo Secrets részében:
+
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_VAPID_PUBLIC_KEY

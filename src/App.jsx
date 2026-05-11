@@ -923,6 +923,8 @@ function SettingsModal({
   unblockUser,
   desktopState,
   setDesktopState,
+  updateState,
+  setUpdateState,
   logoutCurrent,
   logoutOthers,
   logoutEverywhere,
@@ -989,6 +991,31 @@ function SettingsModal({
             }}>
               Natív értesítések: {desktopState.nativeNotifications ? "be" : "ki"}
             </button>
+            <button onClick={async () => {
+              const next = await window.krilixDesktop.setState({ checkUpdatesOnStart: !desktopState.checkUpdatesOnStart });
+              setDesktopState(next);
+            }}>
+              Frissítéskeresés indításkor: {desktopState.checkUpdatesOnStart ? "be" : "ki"}
+            </button>
+            <button onClick={async () => {
+              const next = await window.krilixDesktop.checkForUpdates();
+              setUpdateState(next);
+            }}>
+              Frissítés keresése
+            </button>
+            {updateState?.available && !updateState?.downloaded && (
+              <button onClick={async () => {
+                const next = await window.krilixDesktop.downloadUpdate();
+                setUpdateState(next);
+              }}>
+                Frissítés letöltése
+              </button>
+            )}
+            {updateState?.downloaded && (
+              <button onClick={() => window.krilixDesktop.quitAndInstall()}>
+                Újraindítás és telepítés
+              </button>
+            )}
             <button onClick={() => window.krilixDesktop.restart()}>
               App újraindítása
             </button>
@@ -997,6 +1024,12 @@ function SettingsModal({
             </button>
           </div>
           <em className="formMessage">Verzió: {desktopState.version}</em>
+          {updateState?.message && (
+            <em className="formMessage">
+              Frissítés: {updateState.message}
+              {updateState.progress ? ` (${updateState.progress}%)` : ""}
+            </em>
+          )}
         </section>
       )}
 
@@ -1909,6 +1942,7 @@ export default function App() {
   const [blockedProfiles, setBlockedProfiles] = useState([]);
   const [pushState, setPushState] = useState("unknown");
   const [desktopState, setDesktopState] = useState(null);
+  const [updateState, setUpdateState] = useState(null);
   const [incomingCall, setIncomingCall] = useState(null);
   const [incomingCaller, setIncomingCaller] = useState(null);
   const [activeCall, setActiveCall] = useState(null);
@@ -1965,7 +1999,18 @@ export default function App() {
   useEffect(() => {
     if (!window.krilixDesktop?.isDesktop) return;
 
-    window.krilixDesktop.getState().then(setDesktopState).catch(() => {});
+    window.krilixDesktop.getState().then((state) => {
+      setDesktopState(state);
+      setUpdateState(state.updateState || null);
+    }).catch(() => {});
+
+    const unsubscribe = window.krilixDesktop.onUpdateState?.((state) => {
+      setUpdateState(state);
+    });
+
+    return () => {
+      unsubscribe?.();
+    };
   }, []);
 
   useEffect(() => {
@@ -3578,6 +3623,8 @@ export default function App() {
           unblockUser={unblockUser}
           desktopState={desktopState}
           setDesktopState={setDesktopState}
+          updateState={updateState}
+          setUpdateState={setUpdateState}
           logoutCurrent={logout}
           logoutOthers={logoutOthers}
           logoutEverywhere={logoutEverywhere}

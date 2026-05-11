@@ -347,3 +347,25 @@ Javítások:
 
 Fontos:
 Ezt a javítást Netlifyra is fel kell tölteni, és a Windows appot is újra kell telepíteni.
+
+
+## Desktop Pack 3 — Auto-update Pack
+
+Új funkciók:
+- GitHub Releases alapú desktop auto-update
+- `electron-updater` runtime bekötés
+- frissítés keresése induláskor kapcsolóval
+- Beállítások → Desktop app:
+  - frissítés keresése
+  - frissítés letöltése
+  - újraindítás és telepítés
+  - frissítési státusz
+- Tray menüben frissítés keresése
+- GitHub Actions workflow:
+  - tag push-ra Windows telepítő és release generálás
+- `DESKTOP-UPDATE.md` részletes használati útmutató
+- verzió: 1.2.0
+
+Fontos:
+A Desktop Pack 3-at még egyszer kézzel telepíteni kell.
+A későbbi desktop verziók már az appon belüli frissítővel frissíthetők, ha a GitHub Release elkészült.

@@ -1,10 +1,19 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage, shell, ipcMain, Notification, session } = require("electron");
+const { app, BrowserWindow, Tray, Menu, nativeImage, shell, ipcMain, Notification, session, dialog } = require("electron");
 const path = require("node:path");
 const fs = require("node:fs");
+const { autoUpdater } = require("electron-updater");
 
 let mainWindow;
 let tray;
 let isQuitting = false;
+let updateState = {
+  status: "idle",
+  message: "Nincs frissítés ellenőrizve.",
+  available: false,
+  downloaded: false,
+  progress: 0,
+  version: null,
+};
 
 const isDev = !app.isPackaged;
 const devUrl = process.env.ELECTRON_RENDERER_URL || "http://localhost:5173";
@@ -15,6 +24,7 @@ const defaultState = {
   closeToTray: true,
   nativeNotifications: true,
   launchAtLogin: false,
+  checkUpdatesOnStart: true,
   bounds: {
     width: 1280,
     height: 820,
@@ -40,6 +50,16 @@ function assetPath(...parts) {
     : path.join(process.resourcesPath, "app.asar", "dist", ...parts);
 }
 
+function sendToRenderer(channel, payload) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  mainWindow.webContents.send(channel, payload);
+}
+
+function setUpdateState(patch) {
+  updateState = { ...updateState, ...patch };
+  sendToRenderer("krilix:updateState", updateState);
+}
+
 function showMainWindow() {
   if (!mainWindow) return;
   mainWindow.show();
@@ -55,7 +75,11 @@ function updateTrayMenu() {
       { label: "Megnyitás", click: showMainWindow },
       { label: "Elrejtés", click: () => mainWindow?.hide() },
       {
-        label: "Frissítés / újraindítás",
+        label: "Frissítés keresése",
+        click: () => checkForUpdates(),
+      },
+      {
+        label: "Újraindítás",
         click: () => {
           app.relaunch();
           app.exit(0);
@@ -81,6 +105,123 @@ async function clearWebCache() {
     });
   } catch (error) {
     console.error("Cache törlési hiba:", error);
+  }
+}
+
+function setupAutoUpdater() {
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on("checking-for-update", () => {
+    setUpdateState({
+      status: "checking",
+      message: "Frissítés keresése...",
+      available: false,
+      downloaded: false,
+      progress: 0,
+    });
+  });
+
+  autoUpdater.on("update-available", (info) => {
+    setUpdateState({
+      status: "available",
+      message: `Új verzió elérhető: ${info.version}`,
+      available: true,
+      downloaded: false,
+      progress: 0,
+      version: info.version,
+    });
+
+    if (mainWindow) {
+      dialog.showMessageBox(mainWindow, {
+        type: "info",
+        title: "Krilix Talk frissítés",
+        message: `Új Krilix Talk verzió érhető el: ${info.version}`,
+        detail: "A Beállítások → Desktop app résznél letöltheted és telepítheted.",
+        buttons: ["Rendben"],
+      }).catch(() => {});
+    }
+  });
+
+  autoUpdater.on("update-not-available", () => {
+    setUpdateState({
+      status: "not-available",
+      message: "Nincs új desktop verzió.",
+      available: false,
+      downloaded: false,
+      progress: 0,
+    });
+  });
+
+  autoUpdater.on("download-progress", (progress) => {
+    setUpdateState({
+      status: "downloading",
+      message: `Frissítés letöltése: ${Math.round(progress.percent)}%`,
+      available: true,
+      downloaded: false,
+      progress: Math.round(progress.percent),
+    });
+  });
+
+  autoUpdater.on("update-downloaded", (info) => {
+    setUpdateState({
+      status: "downloaded",
+      message: `Frissítés letöltve: ${info.version}. Újraindítás szükséges.`,
+      available: true,
+      downloaded: true,
+      progress: 100,
+      version: info.version,
+    });
+
+    if (mainWindow) {
+      dialog.showMessageBox(mainWindow, {
+        type: "info",
+        title: "Krilix Talk frissítés letöltve",
+        message: "Az új verzió készen áll.",
+        detail: "Az alkalmazás újraindítással telepíti a frissítést.",
+        buttons: ["Újraindítás most", "Később"],
+      }).then((result) => {
+        if (result.response === 0) {
+          isQuitting = true;
+          autoUpdater.quitAndInstall();
+        }
+      }).catch(() => {});
+    }
+  });
+
+  autoUpdater.on("error", (error) => {
+    setUpdateState({
+      status: "error",
+      message: error?.message || "Frissítési hiba.",
+      available: false,
+      downloaded: false,
+    });
+  });
+}
+
+async function checkForUpdates() {
+  if (isDev || !app.isPackaged) {
+    setUpdateState({
+      status: "dev",
+      message: "Fejlesztői módban nincs desktop auto-update.",
+      available: false,
+      downloaded: false,
+      progress: 0,
+    });
+    return updateState;
+  }
+
+  try {
+    await autoUpdater.checkForUpdates();
+    return updateState;
+  } catch (error) {
+    setUpdateState({
+      status: "error",
+      message: error?.message || "Nem sikerült frissítést keresni.",
+      available: false,
+      downloaded: false,
+    });
+    return updateState;
   }
 }
 
@@ -137,6 +278,7 @@ async function createWindow() {
   });
 
   if (isDev) {
+    await session.defaultSession.clearCache();
     await mainWindow.loadURL(devUrl);
   } else {
     await mainWindow.loadURL(`${APP_URL}?desktop=1&v=${app.getVersion()}&t=${Date.now()}`);
@@ -158,6 +300,7 @@ ipcMain.handle("krilix:getDesktopState", () => {
     version: app.getVersion(),
     isPackaged: app.isPackaged,
     appUrl: isDev ? devUrl : APP_URL,
+    updateState,
   };
 });
 
@@ -187,6 +330,29 @@ ipcMain.handle("krilix:showNotification", (_event, payload = {}) => {
   return true;
 });
 
+ipcMain.handle("krilix:checkForUpdates", () => checkForUpdates());
+
+ipcMain.handle("krilix:downloadUpdate", async () => {
+  if (isDev || !app.isPackaged) return updateState;
+
+  try {
+    await autoUpdater.downloadUpdate();
+    return updateState;
+  } catch (error) {
+    setUpdateState({
+      status: "error",
+      message: error?.message || "Nem sikerült letölteni a frissítést.",
+      available: false,
+    });
+    return updateState;
+  }
+});
+
+ipcMain.handle("krilix:quitAndInstall", () => {
+  isQuitting = true;
+  autoUpdater.quitAndInstall();
+});
+
 ipcMain.handle("krilix:restart", () => {
   app.relaunch();
   app.exit(0);
@@ -198,8 +364,15 @@ ipcMain.handle("krilix:quit", () => {
 });
 
 app.whenReady().then(async () => {
+  setupAutoUpdater();
   await createWindow();
   createTray();
+
+  if (readState().checkUpdatesOnStart && app.isPackaged) {
+    setTimeout(() => {
+      checkForUpdates();
+    }, 3500);
+  }
 
   app.on("activate", showMainWindow);
 });

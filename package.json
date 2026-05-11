@@ -1,7 +1,7 @@
 {
   "name": "krilix-talk",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5173 --strictPort",
@@ -10,7 +10,9 @@
     "vapid": "web-push generate-vapid-keys",
     "desktop:dev": "concurrently -k \"vite --port 5173 --strictPort\" \"wait-on http://localhost:5173 && electron .\"",
     "desktop:build": "vite build --base=./ && electron-builder --dir",
-    "desktop:dist": "vite build --base=./ && electron-builder --win nsis"
+    "desktop:dist": "vite build --base=./ && electron-builder --win nsis",
+    "desktop:publish": "vite build --base=./ && electron-builder --win nsis --publish always",
+    "desktop:pack": "vite build --base=./ && electron-builder --win nsis --publish never"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
@@ -18,7 +20,8 @@
     "vite": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "@supabase/supabase-js": "latest"
+    "@supabase/supabase-js": "latest",
+    "electron-updater": "^6.3.9"
   },
   "devDependencies": {
     "vite-plugin-pwa": "latest",
@@ -26,8 +29,7 @@
     "electron": "latest",
     "electron-builder": "latest",
     "concurrently": "latest",
-    "wait-on": "latest",
-    "electron-updater": "latest"
+    "wait-on": "latest"
   },
   "main": "electron/main.cjs",
   "build": {
@@ -57,8 +59,10 @@
     },
     "publish": [
       {
-        "provider": "generic",
-        "url": "https://example.com/krilix-updates"
+        "provider": "github",
+        "owner": "kristoflanczos",
+        "repo": "krilix-talk",
+        "releaseType": "release"
       }
     ]
   },
