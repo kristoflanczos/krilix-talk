@@ -369,3 +369,5 @@ Ezt a javítást Netlifyra is fel kell tölteni, és a Windows appot is újra ke
 Fontos:
 A Desktop Pack 3-at még egyszer kézzel telepíteni kell.
 A későbbi desktop verziók már az appon belüli frissítővel frissíthetők, ha a GitHub Release elkészült.
+
+Desktop update test 1.2.1
