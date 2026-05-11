@@ -1,18 +1,16 @@
 Krilix Talk környezeti változók
 
-Hozz létre egy .env fájlt a projekt gyökerében:
+Helyi .env fájl:
 
 VITE_SUPABASE_URL=https://nrryghqumxqonqvpyzqx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=SAJÁT_PUBLISHABLE_KEY
 VITE_VAPID_PUBLIC_KEY=SAJÁT_VAPID_PUBLIC_KEY
 
-A VAPID_PRIVATE_KEY soha ne kerüljön a frontendbe.
-
-
-GitHub Actions secrets
-
-A desktop auto-update release workflowhoz add hozzá a GitHub repo Secrets részében:
+GitHub Actions secrets a krilix-talk repóban:
 
 VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
 VITE_VAPID_PUBLIC_KEY
+RELEASE_REPO_TOKEN
+
+A VAPID_PRIVATE_KEY soha ne kerüljön a frontendbe vagy GitHubra.

@@ -370,4 +370,16 @@ Fontos:
 A Desktop Pack 3-at még egyszer kézzel telepíteni kell.
 A későbbi desktop verziók már az appon belüli frissítővel frissíthetők, ha a GitHub Release elkészült.
 
-Desktop update test 1.2.1
+
+## Desktop Pack 4 — Private code repo + public release repo
+
+Új működés:
+- a forráskód repó maradhat private: `kristoflanczos/krilix-talk`
+- az auto-update külön public release repóból működik: `kristoflanczos/krilix-talk-releases`
+- a `package.json` publish célpontja átállítva a release-only repóra
+- a GitHub Actions workflow a `RELEASE_REPO_TOKEN` secrettel publikálja a release fájlokat
+- verzió: `1.2.2`
+
+Fontos:
+- `krilix-talk-releases` maradjon public
+- `krilix-talk` csak akkor legyen újra private, ha az `v1.2.2` release már sikeresen megjelent a release repóban

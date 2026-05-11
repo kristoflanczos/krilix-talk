@@ -278,7 +278,6 @@ async function createWindow() {
   });
 
   if (isDev) {
-    await session.defaultSession.clearCache();
     await mainWindow.loadURL(devUrl);
   } else {
     await mainWindow.loadURL(`${APP_URL}?desktop=1&v=${app.getVersion()}&t=${Date.now()}`);

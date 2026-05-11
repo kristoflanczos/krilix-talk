@@ -1,56 +1,51 @@
 # Krilix Talk Desktop Auto-update
 
-A Desktop Pack 3 GitHub Releases alapú frissítést használ.
+A Desktop Pack 4 már külön release-only repót használ.
 
-## Egyszeri GitHub Secrets beállítás
+## Repo felállás
 
-GitHub repo → Settings → Secrets and variables → Actions → New repository secret
+```text
+kristoflanczos/krilix-talk
+= forráskód, lehet PRIVATE
 
-Add hozzá:
+kristoflanczos/krilix-talk-releases
+= csak desktop release fájlok, PUBLIC
+```
+
+Az app frissítője a public `krilix-talk-releases` repó GitHub Releases részét olvassa.
+
+## Szükséges GitHub Actions secrets a krilix-talk repóban
+
+GitHub repo → Settings → Secrets and variables → Actions
 
 ```text
 VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
 VITE_VAPID_PUBLIC_KEY
+RELEASE_REPO_TOKEN
 ```
 
-Ugyanazokkal az értékekkel, mint a helyi `.env` és Netlify env.
+A `RELEASE_REPO_TOKEN` csak a `krilix-talk-releases` repóra kapjon jogosultságot:
+
+```text
+Contents: Read and write
+Metadata: Read-only
+```
 
 ## Release készítés
 
-Frissítés után:
-
 ```powershell
 git add .
-git commit -m "Desktop Pack 3"
+git commit -m "Desktop Pack 4 release repo split"
 git push
-git tag v1.2.0
-git push origin v1.2.0
+
+git tag v1.2.2
+git push origin v1.2.2
 ```
 
-A tag push elindítja a GitHub Actions workflow-t, ami elkészíti a Windows telepítőt és a release fájlokat.
+A workflow a privát kód repóból buildel, de a kész fájlokat a public release repóba tölti.
 
-## Fontos
+## Miután ez működik
 
-A Desktop Pack 3-at még egyszer kézzel kell telepíteni.
-Ezután a következő verzióknál az app Beállítások → Desktop app részében lehet frissítést keresni, letölteni és telepíteni.
-
-## Következő verziók
-
-A verziószámot mindig emelni kell a `package.json`-ban.
-
-Példa:
-
-```json
-"version": "1.2.1"
-```
-
-Majd:
-
-```powershell
-git add .
-git commit -m "Desktop update 1.2.1"
-git push
-git tag v1.2.1
-git push origin v1.2.1
-```
+A `krilix-talk` forráskód repót vissza lehet állítani PRIVATE-ra.
+A `krilix-talk-releases` repo maradjon PUBLIC.

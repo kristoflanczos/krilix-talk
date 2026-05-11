@@ -1,7 +1,7 @@
 {
   "name": "krilix-talk",
   "private": true,
-  "version": "1.2.1",
+  "version": "1.2.2",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5173 --strictPort",
@@ -61,7 +61,7 @@
       {
         "provider": "github",
         "owner": "kristoflanczos",
-        "repo": "krilix-talk",
+        "repo": "krilix-talk-releases",
         "releaseType": "release"
       }
     ]
